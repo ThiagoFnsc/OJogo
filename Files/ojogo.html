@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>O jogo</title>
+        <link rel="icon" href="favicon.ico" type="image/x-icon"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            * {
+                font-family: Verdana, Geneva, Tahoma, sans-serif;
+                color:white;
+                margin:0;
+            }
+
+            @keyframes arcoiris {
+                0%   {background-color: red;}
+                14%  {background-color: orange;}
+                28%  {background-color: darkgoldenrod;}
+                42%  {background-color: green;}
+                57%  {background-color: blue;}
+                71%  {background-color: indigo;}
+                85%  {background-color: purple;}
+                100% {background-color: red;}
+            }
+
+            @keyframes pop {
+                0%   {font-size: 42pt;}
+                50%  {font-size: 56pt;}
+                100% {font-size: 42pt;}
+            }
+
+            body{
+                animation-name: arcoiris;
+                animation-duration: 10s;
+                animation-timing-function: linear;
+                animation-iteration-count: infinite;
+            }
+            
+            .centerPage {
+                width:fit-content;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+
+            .centerText{
+                width:100%;
+                text-align: center;
+            }
+
+            h1{
+                font-size: 140pt;
+                white-space: nowrap;
+            }
+
+            .pillButton{
+                display:block;
+                padding:8px 14px;
+                border-radius: 500px;
+                background-color: transparent;
+                border: 3px solid grey;
+                text-decoration:none;
+                width: fit-content;
+                height: fit-content;
+            }
+
+            .pillButton:hover{
+                background-color: darkgray;
+            }
+
+            .pillButton:focus {
+                outline: none;
+            }
+
+            .perder{
+                margin: 0 auto;
+                animation-name: pop;
+                animation-duration: 2s;
+                animation-iteration-count: infinite;
+            }
+            
+            .me{
+                font-weight: bold;
+                text-decoration: underline;
+                color:lightgray;
+            }
+
+            .eoq{
+                margin: 15px;
+                position: fixed;
+                bottom: 0;
+                right: 0;
+                font-size: 25pt;
+            }
+
+            p{
+                font-size: 28pt;
+            }
+
+            .fixedHeight{
+                margin: 28px 0;
+                height:100px;
+                display:flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+
+            .leaderBoardHolder{
+                position: fixed;
+                right:0;
+                top:0;
+            }
+
+            .greetings, .leaderBoardHolder{
+                padding:5px;
+                width: fit-content;
+            }
+
+            .greetings .pillButton{
+                margin: 5px auto 0 auto;
+            }
+        </style>
+        <script>
+            window.WebSocket = window.WebSocket || window.MozWebSocket;
+            var connection;
+            var me;
+            var leaderBoard;
+            var greetings;
+            var nick;
+
+            function ready(){
+                resize();
+                connect();
+                leaderBoard=document.getElementById("leaderBoard");
+                greetings=document.getElementsByClassName("greetings")[0];
+                nick=document.getElementById("nick");
+            }
+
+            function changeNick(){
+                var newNick = prompt("Digite seu novo nick");
+                if(newNick){
+                    connection.send(JSON.stringify({newNick:newNick}));
+                }
+            }
+
+            function connect(){
+                connection = new WebSocket("ws://"+window.location.hostname + ":" + window.location.port);
+                connection.onopen = function () {
+                    document.getElementById("txt").innerText="Conectado";
+                    if(localStorage.getItem("id")){
+                        connection.send(JSON.stringify({id:localStorage.getItem("id")}));
+                        console.log("Connection established, id " + localStorage.getItem("id"));
+                    }else{
+                        connection.send(JSON.stringify({id:"?"}));
+                        console.log("Connection established, requesting id");
+                    }
+                };
+                connection.onerror = function (error) {
+                  console.log("Connection error");
+                };
+                connection.onmessage = function (message) {
+                    var data=JSON.parse(message.data);
+                    if(data.alert) alert(data.alert);
+                    if(data.reload) location.reload(true);
+                    if(data.me){
+                        me=data.me;
+                        nick.innerText=me.nick;
+                    }
+                    if(data.showID){
+                        var id=document.getElementById("id");
+                        id.innerText="Código: " + localStorage.getItem("id");
+                        id.hidden=false;
+                    }
+                    if(data.nickInUse){
+                        if(confirm("Esse nick já está em uso por outro usuário.\nEsse usuário é você?")){
+                            if(confirm("Há uma maneira de você usar o mesmo nick aqui, porém você precisa primeiro confirmar que o dono desse nick é você.\nPara confirmar, você precisa digitar um número que vai aparecer no navegador onde você está logado com o nick que deseja, a próxima janela vai requesitar esse número.\nAbra o navegador e acesse essa página antes de clicar em OK\nEstá preparado?")){
+                                connection.send(JSON.stringify({showID:data.nickInUse}));
+                                var newID = prompt("Ok. o código deve estar visível abaixo da leaderboard. digite-o");
+                                if(newID){
+                                    connection.send(JSON.stringify({changeToID:newID}));
+                                }
+                            }
+                        }
+                    }
+                    if(data.txt)
+                        document.getElementById("txt").innerText=data.usrs + (data.usrs == 1 ? " pessoa perdeu " : " pessoas perderam ")
+                            + data.tTimes + (data.tTimes == 1 ? " vez" : " vezes") +" até agora.\nVocê perdeu "
+                            + data.me.times + (data.me.times == 1 ? " vez." : " vezes.");
+                    if(data.leaderBoard){
+                        leaderBoard.innerHTML="";
+                        data.leaderBoard.forEach(player => {
+                            leaderBoard.innerHTML+="<li"+(player.nick == me.nick ? " class=\"me\"" : "")+">"+player.times+" -> "+player.nick+"</li>"
+                        });
+                    }
+                    if(data.newID){
+                        localStorage.setItem("id", data.newID);
+                        connection.close();
+                        console.log("ID received: " + data.newID);
+                    }
+                    console.log("Update received");
+                };
+                connection.onclose = function(){
+                    console.log("Connection ended, trying to reconnect")
+                    document.getElementById("txt").innerHTML="Vish, caiu. Reconectando...";
+                    connect();
+                }
+            }
+
+            function resize(){
+                var scale=Math.min(window.innerWidth / 900, window.innerHeight / 900);
+                Array.from(document.getElementsByClassName("scale")).forEach(element => {element.style.zoom=scale});
+            }
+
+            function perder(){
+                connection.send(JSON.stringify({click:true}));
+                if(me && me.times == 0 && !me.customNick)
+                    if(confirm("Olá jogador "+me.nick+", gostaria de customizar seu nick?"))
+                        changeNick();
+            }
+        </script>
+    </head>
+    <body onresize="resize()" onload="ready()">
+        <div class="centerPage scale">
+            <h1 class="centerText">O jogo</h1>
+            <div class="fixedHeight">
+                <a class="pillButton perder" href="javascript:perder()">Perdi</a>
+            </div>
+            <p class="centerText" id="txt">Conectando...</p>
+        </div>
+        <a href="/eoq" class="pillButton eoq scale">What?</a>
+        <div class="greetings scale" ><h3 class="centerText">Olá <span id="nick"></span>. <a href="javascript:changeNick()" class="pillButton">Trocar nick</a></h3></div>
+        <div class="leaderBoardHolder scale">
+            <h2>Leaderboard:</h2>
+            <ul id="leaderBoard"></ul>
+            <h4 id="id" hidden></h4>
+        </div>
+    </body>
+</html>

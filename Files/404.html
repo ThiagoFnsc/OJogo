@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Erro 404</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * {
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            color: white;
+            margin: 0;
+            font-size: 10pt;
+            text-align: center;
+            width: 100%;
+        }
+
+        body {
+            background-color: darkslategrey
+        }
+
+        .holder {
+            width: fit-content;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            height: fit-content;
+            width: fit-content;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 46pt;
+        }
+
+        h2 {
+            word-break: break-word;
+        }
+
+        .pillButton {
+            display: block;
+            padding: 8px 14px;
+            border-radius: 500px;
+            background-color: transparent;
+            border: 3px solid grey;
+            text-decoration: none;
+            width: fit-content;
+            height: fit-content;
+            margin: 15px auto 0 auto;
+        }
+
+        .pillButton:hover {
+            background-color: darkgray;
+        }
+
+        .pillButton:focus {
+            outline: none;
+            background-color: darkslateblue
+        }
+    </style>
+    <script>
+        function ready() {
+            resize();
+        }
+
+        function resize() {
+            document.body.style.zoom = Math.min(window.innerWidth / 450, window.innerHeight / 250);
+        }
+    </script>
+</head>
+
+<body onresize="resize()" onload="ready()">
+    <div class="holder">
+        <h1>¯\_(ツ)_/¯</h1>
+        <h2>Erro 404: a pagina %filename% não existe.</h2>
+        <a href="/" class="pillButton">Pagina inicial</a>
+    </div>
+</body>
+
+</html>

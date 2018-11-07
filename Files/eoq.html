@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>O jogo</title>
+        <link rel="icon" href="favicon.ico" type="image/x-icon"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            * {
+                font-family: Verdana, Geneva, Tahoma, sans-serif;
+                color:white;
+                margin:0;
+            }
+
+            @keyframes arcoiris {
+                0%   {background-color: red;}
+                14%  {background-color: orange;}
+                28%  {background-color: darkgoldenrod;}
+                42%  {background-color: green;}
+                57%  {background-color: blue;}
+                71%  {background-color: indigo;}
+                85%  {background-color: purple;}
+                100% {background-color: red;}
+            }
+
+            body{
+                animation-name: arcoiris;
+                animation-duration: 10s;
+                animation-timing-function: linear;
+                animation-iteration-count: infinite;
+            }
+
+            .holder{
+                width:fit-content;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                height:fit-content;
+                width: 500px;
+                background-color: black;
+            }
+
+            p{
+                font-size: 14pt;
+                padding: 15px;
+                height: fit-content;
+                background-color: seagreen;
+                border: 2px solid white;
+            }
+
+            h1, h2{
+                width: 100%;
+                text-align: center;
+            }
+
+            h1{
+                font-size: 46pt;
+            }
+
+            h2{
+                font-size: 12pt;
+                margin-bottom: 10px;
+            }
+
+            .pillButton{
+                display:inline-block;
+                padding:8px 14px;
+                border-radius: 500px;
+                background-color: transparent;
+                border: 3px solid grey;
+                text-decoration:none;
+                width: fit-content;
+                height: fit-content;
+                vertical-align: middle;
+                margin: 15px;
+            }
+            
+            .pillButton:hover{
+                background-color: darkgray;
+            }
+
+            .pillButton:focus {
+                outline: none;
+                background-color: darkslateblue
+            }
+
+            a{
+                position: fixed;
+                bottom: 0;
+                right: 0;
+                font-size: 14pt;
+            }
+        </style>
+        <script>
+            function ready(){
+                resize();
+            }
+
+            function resize(){
+                document.body.style.zoom=Math.min(window.innerWidth / 600, window.innerHeight / 600);
+                document.body.getElementsByClassName("pillButton")[0].style.zoom=document.body.style.zoom
+            }
+        </script>
+    </head>
+    <body onresize="resize()" onload="ready()">
+        <div class="holder">
+            <p>Parabéns. Você agora está jogando o jogo (isso se você já não estava).<br>
+                O jogo é bem simples.<br>
+                -Você está sempre jogando o jogo.<br>
+                -Você não pode ganhar. Você só pode perder.<br>
+                -Você perde toda vez que se lembra do jogo.<br>
+                -Sempre que você se lembrar do jogo você deve anunciar em voz alta "Eu perdi".<br>
+                -Depois que você perde, você tem 30 minutos nos quais você pode se lembrar do jogo sem perder.<br>
+                -Assim que você mencionar o jogo para alguém, essa pessoa começa a participar também.<br>
+                -O objetivo do jogo é ter todos na terra jogando.
+            </p>
+            <h1>O JOGO</h1>
+            <h2>Você perdeu.</h2>
+        </div>
+        <a href="/" class="pillButton">Voltar</a>
+    </body>
+</html>

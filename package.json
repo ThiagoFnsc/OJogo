@@ -1,0 +1,16 @@
+{
+  "name": "perdi",
+  "version": "1.0.0",
+  "description": "Nesse jogo, ninguem ganha",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^10.9.4",
+    "websocket": "^1.0.26"
+  }
+}
