@@ -52,19 +52,37 @@ var httpServer = http.createServer((req, res) => {
     }
     log(`Req: ${req.url} from ${req.connection.remoteAddress}`);
     if (req.method === "GET") {
-        var pathname = url.parse(req.url).pathname;
-        if (req.headers.referer && pathname != "/favicon.ico") {
-            var relativePath = req.headers.referer.split(req.headers.host)[1];
-            if (shorcuts[relativePath]) relativePath = shorcuts[relativePath];
-            var pathParts = relativePath.split("/");
-            pathParts.pop();
-            pathname = `${pathParts.join("/")}${pathname}`;
+        var pathname = decodeURI(url.parse(req.url).pathname);
+        var response;
+        if (shorcuts[pathname]) {
+            pathname = shorcuts[pathname];
+            response = buffer.find(file => { return file.path == pathname; });
+        } else {
+            response = buffer.find(file => { return file.path == pathname; });
+            if (response)
+                pathname = response.path;
+            else {
+                response = buffer.find(file => { return file.path.startsWith(pathname) && file.path.endsWith(".html"); });
+                if (response)
+                    pathname = response.path;
+                /*else
+                    if (req.headers.referer && pathname != "/favicon.ico") {
+                        var relativePath = req.headers.referer.split(req.headers.host)[1];
+                        if (relativePath && relativePath != "/") {
+                            if (shorcuts[relativePath])
+                                relativePath = shorcuts[relativePath];
+                            log(`Relative path: ${relativePath}`);
+                            pathname = `${relativePath}${pathname}`;
+                            var response = buffer.find(file => { return file.path == pathname; });
+                            if (response)
+                                return redirect(response.path, req, res);
+                        }
+                    }*/
+            }
         }
-        if (shorcuts[pathname]) pathname = shorcuts[pathname];
-        var bufferedFile = buffer.find(file => { return file.path == pathname; });
-        if (bufferedFile) {
+        if (response) {
             res.writeHead(200, { "Content-Type": exts[path.parse(pathname).ext] || "text/plain", "Content-Disposition": `filename=${path.basename(pathname)}` });
-            res.end(bufferedFile.stream);
+            res.end(response.stream);
         } else {
             log("File not buffered")
             fs.exists(`./Files${pathname}`, exists => {
@@ -72,15 +90,17 @@ var httpServer = http.createServer((req, res) => {
                     pathname = `./Files${pathname}`;
                     fs.stat(pathname, (err, stat) => {
                         if (!err && stat.isDirectory()) {
-                            res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-                            res.write("Aquivos dentro desta pasta: ");
+                            log(`Folder requested: ${pathname}`);
+                            res.writeHead(404, { "Content-Type": "text/html; charset=utf-8" });
                             fs.readdir(pathname, (err, files) => {
                                 if (err) return res.end("Error");
-                                files.forEach(thing => {
-                                    res.write(`<br><a href=\"${url.parse(req.url).pathname}/${thing}\">${thing}</a>"`);
+                                var resp = [];
+                                files.forEach(file => {
+                                    resp.push({ name: file, path: `/${pathname.split("./Files/")[1]}/${file}`, folder: fs.statSync(`${pathname}/${file}`).isDirectory() });
                                 });
-                                log(`Folder requested: ${pathname}`);
-                                res.end();
+                                res.end(buffer.find(file => {
+                                    return file.path == "/pasta.html";
+                                }).stream.toString().replace("%context%", JSON.stringify(resp)));
                             });
                         } else {
                             res.writeHead(404, { "Content-Type": "text/html; charset=utf-8" });
@@ -90,7 +110,9 @@ var httpServer = http.createServer((req, res) => {
                     })
                 } else {
                     res.writeHead(404, { "Content-Type": "text/html; charset=utf-8" });
-                    res.end(buffer.find(file => { return file.path = "/404.html" }).stream.toString().replace("%filename%", pathname));
+                    res.end(buffer.find(file => {
+                        return file.path == "/new404.html";
+                    }).stream.toString().replace("%filename%", pathname));
                     log(`File requested not found: ${pathname}`);
                 }
             });
@@ -105,6 +127,11 @@ var httpServer = http.createServer((req, res) => {
         socket.destroy();
     }
 });;
+
+function redirect(to, req, res) {
+    res.writeHead(302, { "Location": `http://${req.headers.host}${encodeURI(to)}` });
+    res.end();
+}
 
 function startServer() {
     return new Promise((resolve, reject) => {
@@ -154,8 +181,8 @@ function bufferFiles() {
             });
             return flattened;
         }
-        readFiles("./Files").then(bufferedFiles => {
-            buffer = flatten(bufferedFiles);
+        readFiles("./Files").then(responses => {
+            buffer = flatten(responses);
             resolve(buffer.length)
         }).catch(err => {
             reject(err);
@@ -163,15 +190,23 @@ function bufferFiles() {
     });
 }
 
-function backup() {
+function backup(suffix) {
     return new Promise((resolve, reject) => {
-        var directory = `./Backups/${new Date().toLocaleString().replace(/\//g, "-").replace(/:/g, "-")}`;
-        fs.mkdir(directory, err => {
-            if (err) return reject(err);
-            fs.copyFile("./perdedores.json", `${directory}/perdedores.json`, err => {
-                if (err) reject(err);
-                else resolve();
-            });
+        var directory = `./Backups/${new Date().toLocaleString().replace(/\//g, "-").replace(/:/g, "-")}${suffix || ""}`;
+        fs.exists(directory, exists => {
+            if (exists) {
+                if (suffix != undefined) suffix++;
+                else suffix = 1;
+                backup(suffix).then(res => resolve(res)).catch(err => reject(err));
+            } else {
+                fs.mkdir(directory, err => {
+                    if (err) return reject(err);
+                    fs.copyFile("./perdedores.json", `${directory}/perdedores.json`, err => {
+                        if (err) reject(err);
+                        else resolve();
+                    });
+                });
+            }
         });
     });
 }
@@ -446,7 +481,6 @@ const shorcuts = {
     "/": "/ojogo.html",
     "/index": "/ojogo.html",
     "/index.html": "/ojogo.html",
-    "/eoq": "/eoq.html",
 }
 
 process.once('SIGUSR2', () => {

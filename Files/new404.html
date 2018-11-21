@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <title>Erro 404</title>
+        <link rel="icon" href="favicon.ico" type="image/x-icon" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            * {
+                font-family: Verdana, Geneva, Tahoma, sans-serif;
+                color: white;
+                margin: 0;
+                font-size: 10pt;
+                text-align: center;
+                width: 100%;
+            }
+
+            body {
+                background-color: darkslategrey
+            }
+
+            .holder {
+                width: fit-content;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                height: fit-content;
+                width: fit-content;
+                padding: 20px;
+            }
+
+            .pillButton {
+                display: block;
+                padding: 4px 8px;
+                border-radius: 500px;
+                background-color: transparent;
+                border: 2px solid grey;
+                text-decoration: none;
+                width: fit-content;
+                height: fit-content;
+                margin: 5px auto 0 auto;
+                font-size: 8pt;
+            }
+
+            .pillButton:hover {
+                background-color: darkgray;
+            }
+
+            .pillButton:focus {
+                outline: none;
+                background-color: darkslateblue
+            }
+
+            img {
+                width: 100%;
+                height: auto;
+                display: block;
+                background-color: forestgreen;
+            }
+
+            .meme {
+                width: 160px;
+                background-color: white;
+                margin: auto;
+            }
+
+            .meme p {
+                color: black;
+                text-align: left;
+                margin: .25em;
+                font-size: 6pt;
+            }
+        </style>
+        <script>
+            function ready() {
+                resize();
+            }
+
+            function resize() {
+                document.body.style.zoom = Math.min(window.innerWidth / 200, window.innerHeight / 250);
+            }
+        </script>
+    </head>
+
+    <body onresize="resize()" onload="ready()">
+        <div class="holder">
+            <div class="meme">
+                <p>Usuário: tenta acessar uma página aleatória</p>
+                <p style="word-break: break-word;">Site: Erro 404, a página %filename% não existe.</p>
+                <p>Usuário:</p>
+                <img src="/pikachu.svg">
+            </div>
+            <a href="/" class="pillButton">Pagina inicial</a>
+        </div>
+    </body>
+
+</html>

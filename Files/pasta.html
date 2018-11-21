@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            * {
+                font-family: Verdana, Geneva, Tahoma, sans-serif;
+                color: white;
+                margin: 0;
+                font-size: 10pt;
+                text-align: center;
+                width: 100%;
+            }
+
+            body {
+                background-color: darkslategrey
+            }
+
+            .holder {
+                width: fit-content;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                height: fit-content;
+                width: fit-content;
+            }
+
+            h1 {
+                font-size: 16pt;
+                word-break: break-word;
+            }
+
+            li {
+                text-align: left;
+                margin-top: 5px;
+                list-style-type: none;
+            }
+
+            ul {
+                width: fit-content;
+                margin: 15px auto 0 auto;
+            }
+
+            a {
+                color: cornflowerblue;
+            }
+
+            img {
+                height: 100%;
+                width: auto;
+                margin-right: 10px;
+            }
+        </style>
+        <script>
+            function ready() {
+                resize();
+                var files = JSON.parse(`%context%`);
+                document.getElementById("title").innerText = `Arquivos dentro de '${window.location.pathname}'`;
+                var items = "";
+                files.forEach(file => {
+                    if (file.folder)
+                        items += `<li><a href=\"${file.path}\"><img src=\"/folder.svg\">${file.name}</a></li>`;
+                    else
+                        items += `<li><a href=\"${file.path}\" download><img src=\"/download.svg\"></a><a href=\"${file.path}\">${file.name}</a></li>`;
+                });
+                document.getElementById("files").innerHTML = `<ul>${items}</ul>`
+            }
+
+            function resize() {
+                document.body.style.zoom = Math.min(window.innerWidth / 350, window.innerHeight / 250);
+            }
+        </script>
+    </head>
+    <body onresize="resize()" onload="ready()">
+        <div class="holder">
+            <h1 id="title"></h1>
+            <div id="files"></div>
+        </div>
+    </body>
+</html>
